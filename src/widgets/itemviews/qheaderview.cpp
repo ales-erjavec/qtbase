@@ -2795,8 +2795,12 @@ void QHeaderView::paintSection(QPainter *painter, const QRect &rect, int logical
         opt.position = QStyleOptionHeader::Middle;
     opt.orientation = d->orientation;
     // the selected position
-    bool previousSelected = d->isSectionSelected(this->logicalIndex(visual - 1));
-    bool nextSelected =  d->isSectionSelected(this->logicalIndex(visual + 1));
+    bool previousSelected = false;
+    bool nextSelected = false;
+    if (d->clickableSections && d->highlightSelected) {
+        previousSelected = d->isSectionSelected(this->logicalIndex(visual - 1));
+        nextSelected =  d->isSectionSelected(this->logicalIndex(visual + 1));
+    }
     if (previousSelected && nextSelected)
         opt.selectedPosition = QStyleOptionHeader::NextAndPreviousAreSelected;
     else if (previousSelected)
