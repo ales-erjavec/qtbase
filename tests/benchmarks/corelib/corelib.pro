@@ -7,7 +7,8 @@ SUBDIRS = \
         thread \
         tools \
         codecs \
-        plugin
+        plugin \
+        itemmodels
 
 TRUSTED_BENCHMARKS += \
     kernel/qmetaobject \
