@@ -398,16 +398,25 @@ void QGraphicsViewPrivate::recalculateContentSize()
     int scrollBarExtent = q->style()->pixelMetric(QStyle::PM_ScrollBarExtent, 0, q);
     if (frameOnlyAround)
         scrollBarExtent += frameWidth * 2;
+    // Effective scroll bar policy for geometry layout (transient scroll bars should not
+    // affect the viewport size)
+    Qt::ScrollBarPolicy effectiveVBarPolicy = vbarpolicy, effectiveHBarPolicy = hbarpolicy;
+    bool vtransient = hbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, hbar);
+    bool htransient = vbar->style()->styleHint(QStyle::SH_ScrollBar_Transient, nullptr, vbar);
+    if (effectiveHBarPolicy == Qt::ScrollBarAsNeeded && htransient)
+        effectiveHBarPolicy = Qt::ScrollBarAlwaysOff;
+    if (effectiveVBarPolicy == Qt::ScrollBarAsNeeded && vtransient)
+        effectiveVBarPolicy = Qt::ScrollBarAlwaysOff;
 
     // We do not need to subtract the width scrollbars whose policy is
     // Qt::ScrollBarAlwaysOn, this was already done by maximumViewportSize().
-    bool useHorizontalScrollBar = (viewRect.width() > width) && hbarpolicy == Qt::ScrollBarAsNeeded;
-    bool useVerticalScrollBar = (viewRect.height() > height) && vbarpolicy == Qt::ScrollBarAsNeeded;
-    if (useHorizontalScrollBar && vbarpolicy == Qt::ScrollBarAsNeeded) {
+    bool useHorizontalScrollBar = (viewRect.width() > width) && (effectiveHBarPolicy == Qt::ScrollBarAsNeeded);
+    bool useVerticalScrollBar = (viewRect.height() > height) && (effectiveVBarPolicy == Qt::ScrollBarAsNeeded);
+    if (useHorizontalScrollBar && effectiveVBarPolicy == Qt::ScrollBarAsNeeded) {
         if (viewRect.height() > height - scrollBarExtent)
             useVerticalScrollBar = true;
     }
-    if (useVerticalScrollBar && hbarpolicy == Qt::ScrollBarAsNeeded) {
+    if (useVerticalScrollBar && effectiveHBarPolicy == Qt::ScrollBarAsNeeded) {
         if (viewRect.width() > width - scrollBarExtent)
             useHorizontalScrollBar = true;
     }
