@@ -472,6 +472,7 @@ QSize QStackedLayout::minimumSize() const
 void QStackedLayout::setGeometry(const QRect &rect)
 {
     Q_D(QStackedLayout);
+    QLayout::setGeometry(rect);
     switch (d->stackingMode) {
     case StackOne:
         if (QWidget *widget = currentWidget())
