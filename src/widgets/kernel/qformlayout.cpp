@@ -120,6 +120,7 @@ struct QFormLayoutItem
     bool hasHeightForWidth() const { return item->hasHeightForWidth(); }
     int heightForWidth(int width) const { return item->heightForWidth(width); }
     int minimumHeightForWidth(int width) const { return item->minimumHeightForWidth(width); }
+    bool isEmpty() const { return item->isEmpty(); }
     Qt::Orientations expandingDirections() const { return item->expandingDirections(); }
     QSizePolicy::ControlTypes controlTypes() const { return item->controlTypes(); }
     int vStretch() const { return widget() ? widget()->sizePolicy().verticalStretch() : 0; }
@@ -272,6 +273,10 @@ static void updateFormLayoutItem(QFormLayoutItem *item, int userVSpacing,
     item->vSpace = userVSpacing;
 }
 
+static bool isRowEmpty(QFormLayoutItem *label, QFormLayoutItem *field) {
+    return (!label || label->isEmpty()) && (!field || field->isEmpty());
+}
+
 /*
    Iterate over all the controls and gather their size information
    (min, sizeHint and max). Also work out what the spacing between
@@ -317,7 +322,7 @@ void QFormLayoutPrivate::updateSizes()
             QFormLayoutItem *field = m_matrix(i, 1);
 
             // Skip empty rows
-            if (!label && !field)
+            if (isRowEmpty(label, field))
                 continue;
 
             if (label) {
@@ -507,6 +512,9 @@ void QFormLayoutPrivate::setupHfwLayoutData()
         QFormLayoutItem *label = m_matrix(i, 0);
         QFormLayoutItem *field = m_matrix(i, 1);
 
+        if (isRowEmpty(label, field))
+            continue;
+
         if (label) {
             if (label->isHfw) {
                 // We don't check sideBySide here, since a label is only
@@ -685,7 +693,7 @@ void QFormLayoutPrivate::setupVerticalLayoutData(int width)
         QFormLayoutItem *field = m_matrix(i, 1);
 
         // Totally ignore empty rows...
-        if (!label && !field)
+        if (isRowEmpty(label, field))
             continue;
 
         QSize min1;
@@ -839,7 +847,7 @@ void QFormLayoutPrivate::setupHorizontalLayoutData(int width)
         QFormLayoutItem *field = m_matrix(i, 1);
 
         // Totally ignore empty rows...
-        if (!label && !field)
+        if (isRowEmpty(label, field))
             continue;
 
         if (label) {
@@ -2188,6 +2196,9 @@ void QFormLayoutPrivate::arrangeWidgets(const QVector<QLayoutStruct>& layouts, Q
     for (i = 0; i < rr; ++i) {
         QFormLayoutItem *label = m_matrix(i, 0);
         QFormLayoutItem *field = m_matrix(i, 1);
+
+        if (isRowEmpty(label, field))
+            continue;
 
         if (label) {
             int height = layouts.at(label->vLayoutIndex).size;
